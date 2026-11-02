@@ -1,0 +1,13 @@
+- insert:
+    - id: preset-study
+      name: '@deepseek-ai/dsh-agent-preset'
+      config:
+        id: study
+        name: 科研
+        description: Human-Agent项目研究预设
+        order: 10
+        plugins:
+          - id: persona
+            name: '@deepseek-ai/dsh-persona'
+            config:
+              prefix: You are a coding agent powered by the {{model}} model.
