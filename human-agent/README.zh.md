@@ -19,7 +19,7 @@ description: "本地 Human-Agent 科研辅助模块及其模拟数据生命周�
 <a id="mock-data"></a>
 ## 模拟数据
 
-[MockDataService](src/mock-data.ts) 提供 `ctx.studyMockData`。消费方声明 `inject: ['studyMockData']`。预设需要独立数据时，应在不同的 Cordis 隔离作用域中挂载各自的服务实例。
+[MockDataService](plugins/mock-data/src/index.ts) 提供 `ctx.studyMockData`。消费方声明 `inject: ['studyMockData']`。预设需要独立数据时，应在不同的 Cordis 隔离作用域中挂载各自的服务实例。
 
 `initialize('currentTime', value)` 保存调用方提供的 ISO 8601 时间戳，并返回幂等的清理函数。初始化属于调用插件的 effect：卸载该插件会移除其条目，提前清理则允许重新初始化。重复调用旧清理函数不会影响替代条目。服务既不读取时钟，也不校验时间戳字符串。
 
@@ -32,7 +32,7 @@ description: "本地 Human-Agent 科研辅助模块及其模拟数据生命周�
 
 ```sh
 pnpm exec tsc -p human-agent/tsconfig.json
-node --import tsx/esm --test human-agent/tests/mock-data.test.ts
+node --import tsx/esm --test human-agent/plugins/mock-data/tests/mock-data.test.ts
 ```
 
 这些本地辅助模块不在工作区包构建和根 Vitest 测试清单内；请显式运行上述命令。

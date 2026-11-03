@@ -2,7 +2,7 @@
 import assert from 'node:assert/strict'
 import { test, type TestContext } from 'node:test'
 import { Context } from '@deepseek-ai/cordis'
-import MockDataService, { MockDataError } from '../src/mock-data.ts'
+import MockDataService, { MockDataError } from '../src/index.ts'
 
 /** Create an isolated service owner and release it even after assertion failures. */
 async function createContext(t: TestContext): Promise<Context> {

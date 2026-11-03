@@ -19,7 +19,7 @@ Research plugins can share typed simulation data within one service instance. Th
 <a id="mock-data"></a>
 ## Mock data
 
-[MockDataService](src/mock-data.ts) provides `ctx.studyMockData`. Consumers declare `inject: ['studyMockData']`. Mount separate service instances in separate Cordis isolation scopes when presets need independent data.
+[MockDataService](plugins/mock-data/src/index.ts) provides `ctx.studyMockData`. Consumers declare `inject: ['studyMockData']`. Mount separate service instances in separate Cordis isolation scopes when presets need independent data.
 
 `initialize('currentTime', value)` stores a caller-supplied ISO 8601 timestamp and returns an idempotent disposer. Initialization is a calling-plugin effect: unloading that plugin removes its entry, while early disposal permits reinitialization. Repeated calls to an old disposer leave a replacement entry intact. The service neither reads the clock nor validates timestamp strings.
 
@@ -32,7 +32,7 @@ Run from the repository root:
 
 ```sh
 pnpm exec tsc -p human-agent/tsconfig.json
-node --import tsx/esm --test human-agent/tests/mock-data.test.ts
+node --import tsx/esm --test human-agent/plugins/mock-data/tests/mock-data.test.ts
 ```
 
 These local helpers are outside the workspace package build and the root Vitest test inventory; run the commands above explicitly.
