@@ -43,15 +43,25 @@ test('an old disposer cannot remove a replacement initialization', async (t) => 
 
 test('unloading the initializing plugin removes its data while the provider stays available', async (t) => {
   const ctx = await createContext(t)
+  const expectedResults = ['List the meetings scheduled for today.']
   const consumer = await ctx.plugin({
     inject: ['studyMockData'],
     apply(inner: Context) {
       inner.studyMockData.initialize('currentTime', '2026-11-02T00:00:00.000Z')
+      inner.studyMockData.initialize('taskPrompt', 'Summarize my calendar for today.')
+      inner.studyMockData.initialize('expectedResults', expectedResults)
     },
   })
+  expectedResults.push('Include tomorrow’s meetings.')
   assert.equal(ctx.studyMockData.read('currentTime'), '2026-11-02T00:00:00.000Z')
+  assert.equal(ctx.studyMockData.read('taskPrompt'), 'Summarize my calendar for today.')
+  const storedResults = ctx.studyMockData.read('expectedResults')
+  assert.deepEqual(storedResults, ['List the meetings scheduled for today.'])
+  assert.ok(Object.isFrozen(storedResults))
   await consumer.dispose()
   assert.throws(() => ctx.studyMockData.read('currentTime'), { code: 'not-initialized' })
+  assert.throws(() => ctx.studyMockData.read('taskPrompt'), new MockDataError('not-initialized', 'taskPrompt'))
+  assert.throws(() => ctx.studyMockData.read('expectedResults'), new MockDataError('not-initialized', 'expectedResults'))
 })
 
 test('separate service instances retain independent values', async (t) => {

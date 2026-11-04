@@ -21,9 +21,11 @@ Research plugins can share typed simulation data within one service instance. Th
 
 [MockDataService](plugins/mock-data/src/index.ts) provides `ctx.studyMockData`. Consumers declare `inject: ['studyMockData']`. Mount separate service instances in separate Cordis isolation scopes when presets need independent data.
 
-`initialize('currentTime', value)` stores a caller-supplied ISO 8601 timestamp and returns an idempotent disposer. Initialization is a calling-plugin effect: unloading that plugin removes its entry, while early disposal permits reinitialization. Repeated calls to an old disposer leave a replacement entry intact. The service neither reads the clock nor validates timestamp strings.
+Callers supply `currentTime` as an ISO 8601 timestamp, `taskPrompt` as a string, and `expectedResults` as an array of summary strings for scoring. The service trusts caller-supplied timestamps and stores a frozen copy of `expectedResults`.
 
-`read('currentTime')` returns the stored string. Missing data throws `MockDataError` with code `not-initialized`; duplicate initialization throws code `already-initialized` without replacing the value. Both errors identify the entry through `key`. Data remains in memory and is not included in Session events or model requests.
+`initialize(key, value)` returns an idempotent disposer. The calling plugin owns the effect. Unloading that plugin removes its entry, and early disposal allows reinitialization. Repeated calls to an old disposer leave a replacement entry intact.
+
+`read(key)` returns the stored value. Missing data throws `MockDataError` with code `not-initialized`. Duplicate initialization throws code `already-initialized` and preserves the stored value. Both errors identify the entry through `key`. The service keeps all entries in memory within its Cordis scope. Consumers own any model submission and its Session logging.
 
 <a id="verification"></a>
 ## Verification

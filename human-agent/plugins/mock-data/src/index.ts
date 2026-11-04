@@ -5,6 +5,14 @@ import { Service, type Context } from '@deepseek-ai/cordis'
 export interface MockDataValues {
   /** Current time as an ISO 8601 timestamp. */
   currentTime: string
+  /** Prompt text for the study task. */
+  taskPrompt: string
+  /** Expected outcome summaries for scoring, stored as a frozen copy. */
+  expectedResults: readonly string[]
+}
+
+const copyValue: { [K in keyof MockDataValues]?: (value: MockDataValues[K]) => MockDataValues[K] } = {
+  expectedResults: (value) => Object.freeze([...value]),
 }
 
 declare module '@deepseek-ai/cordis' {
@@ -45,7 +53,7 @@ export default class MockDataService extends Service {
   /**
    * Initialize one entry until the calling plugin unloads or disposes it early.
    * @param key - Entry to initialize.
-   * @param value - Initial value.
+   * @param value - Initial value. The service stores a frozen copy of `expectedResults`.
    * @returns An idempotent disposer that removes this initialization.
    * @throws {MockDataError} If the entry is already initialized; its value is unchanged.
    */
@@ -57,8 +65,9 @@ export default class MockDataService extends Service {
       throw new MockDataError('already-initialized', key)
     }
 
+    const copy = copyValue[key]
     return this.ctx.effect(() => {
-      this.values[key] = value
+      this.values[key] = copy ? copy(value) : value
       return () => { delete this.values[key] }
     })
   }

@@ -21,9 +21,11 @@ description: "本地 Human-Agent 科研辅助模块及其模拟数据生命周�
 
 [MockDataService](plugins/mock-data/src/index.ts) 提供 `ctx.studyMockData`。消费方声明 `inject: ['studyMockData']`。预设需要独立数据时，应在不同的 Cordis 隔离作用域中挂载各自的服务实例。
 
-`initialize('currentTime', value)` 保存调用方提供的 ISO 8601 时间戳，并返回幂等的清理函数。初始化属于调用插件的 effect：卸载该插件会移除其条目，提前清理则允许重新初始化。重复调用旧清理函数不会影响替代条目。服务既不读取时钟，也不校验时间戳字符串。
+调用方提供 ISO 8601 时间戳 `currentTime`、任务提示词字符串 `taskPrompt`，以及用于评分的预期结果摘要字符串数组 `expectedResults`。服务信任调用方提供的时间戳，并保存 `expectedResults` 的冻结副本。
 
-`read('currentTime')` 返回保存的字符串。数据缺失时抛出代码为 `not-initialized` 的 `MockDataError`；重复初始化时抛出代码为 `already-initialized` 的错误，且不替换已有值。两种错误均通过 `key` 标识条目。数据仅存于内存，不进入 Session 事件或模型请求。
+`initialize(key, value)` 返回幂等的清理函数。调用插件拥有该 effect。卸载该插件会移除其条目，提前清理则允许重新初始化。重复调用旧清理函数不会影响替代条目。
+
+`read(key)` 返回保存的值。数据缺失时抛出代码为 `not-initialized` 的 `MockDataError`。重复初始化时抛出代码为 `already-initialized` 的错误，并保留已有值。两种错误均通过 `key` 标识条目。服务在自身的 Cordis 作用域内将所有条目保存在内存中。消费方负责向模型提交内容及记录对应的 Session 事件。
 
 <a id="verification"></a>
 ## 验证
