@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Data simulation",
+    "description": "Supplies a switchable simulated clock, task prompt, and expected result that other plugins read."
+  }
+}

@@ -1,0 +1,31 @@
+- id: preset-standard
+  disabled: true
+- id: preset-ptc
+  disabled: true
+- id: preset-minimal
+  disabled: true
+- id: preset-cordis
+  disabled: true
+
+- id: agent-preset-registry
+  config:
+    default: research
+
+- id: session-persistence-jsonl
+  config:
+    root: !!js process.getBuiltinModule('node:path').join(ctx.profileContext.dir, 'sessions')
+- id: storage-json
+  config:
+    root: !!js process.getBuiltinModule('node:path').join(ctx.profileContext.dir, 'storages')
+
+- insert:
+    - id: preset-research
+      name: '@deepseek-ai/dsh-agent-preset'
+      config:
+        id: research
+        name: 科研
+        description: 使用实验场景提供的模拟时钟。
+        order: 5
+        plugins:
+          - id: get-time
+            name: '@local/get-time'

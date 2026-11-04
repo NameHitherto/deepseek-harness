@@ -1,0 +1,4 @@
+- insert:
+    - id: data-simulation
+      name: '@local/data-simulation'
+      config: {}

@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Get time",
+    "description": "Tells the model the current time through a tool, reading the simulated clock when a data-simulation scenario is active."
+  }
+}

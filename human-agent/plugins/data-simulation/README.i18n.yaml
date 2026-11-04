@@ -1,0 +1,19 @@
+# Bilingual-pair consistency record for README.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write human-agent/plugins/data-simulation/README.md
+/data-simulation:
+  en: cb3242cf65b72dac
+  zh: c30c8796b2548f4b
+/data-simulation/service:
+  en: 014e044c5b48c422
+  zh: 9a1599a17faa356f
+/data-simulation/change-notification:
+  en: bfc4e2d1271c917b
+  zh: 33f7d8dd3c85ec3e
+/data-simulation/scenario-fields:
+  en: e94e94976153c49d
+  zh: 9ef3a517ed34cef6
+/data-simulation/failure-behavior:
+  en: 264775016fb2d112
+  zh: 203abc12e28c3b83

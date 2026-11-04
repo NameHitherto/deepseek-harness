@@ -1,0 +1,19 @@
+{
+  "name": "@local/get-time",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Tells the model the current time through a tool, reading the simulated clock when a data-simulation scenario is active.",
+  "exports": {
+    ".": "./index.js",
+    "./locale/*.json": "./locale/*.json",
+    "./icon": "./icon.svg"
+  },
+  "files": [
+    "index.js",
+    "locale/*.json",
+    "icon.svg",
+    "README.md",
+    "README.zh.md"
+  ]
+}
