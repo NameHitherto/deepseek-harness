@@ -1,0 +1,13 @@
+{
+  "initial": [
+    {
+      "name": "get_current_time",
+      "description": "Read the current date and time and the weekday. Call it whenever the answer depends on the present moment: a relative date, an elapsed interval, a deadline, or a timestamp to record. Do not infer the current time from memory or from the conversation.",
+      "parameters": {
+        "type": "object",
+        "properties": {}
+      }
+    }
+  ],
+  "changes": []
+}

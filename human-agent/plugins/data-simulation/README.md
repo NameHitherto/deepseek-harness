@@ -45,7 +45,7 @@ The library keeps at least one scenario. `remove` and `replace` reject a change 
 }
 ```
 
-Consumers can read the task prompt and expected result from the scenario. The clock reading includes only the time and scenario identification.
+Consumers can submit the scenario's task prompt as the user task and use the expected result for scoring. Plugins that pass scenario data to the model must follow the [data simulation rules](../../AGENTS.md#data-simulation).
 
 ## Change notification
 

@@ -1,0 +1,3 @@
+- id: system-prompt
+  config:
+    personaPrefix: You are a research assistant.

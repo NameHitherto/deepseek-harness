@@ -28,14 +28,12 @@ const DESCRIPTION = [
   'Read the current date and time and the weekday.',
   'Call it whenever the answer depends on the present moment: a relative date, an elapsed interval,',
   'a deadline, or a timestamp to record. Do not infer the current time from memory or from the conversation.',
-  'It reports the deployment\'s simulated clock when a data-simulation scenario is active,',
-  'and the real system clock otherwise; the result says which one supplied the reading.',
 ].join(' ')
 
 const WEEKDAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 
 /**
- * Validate an IANA zone name.
+ * Validate a named time zone or UTC offset.
  * @param timeZone - candidate zone.
  * @returns the zone name.
  * @throws {TypeError} when the runtime does not know it.
@@ -45,7 +43,7 @@ function resolveZone(timeZone) {
   try {
     new Intl.DateTimeFormat('en-US', { timeZone: candidate })
   } catch {
-    throw new TypeError(`get-time: timeZone "${String(candidate)}" is not an IANA zone name known to this runtime`)
+    throw new TypeError(`get-time: timeZone "${String(candidate)}" must be a supported IANA zone or UTC offset`)
   }
   return candidate
 }
@@ -69,7 +67,7 @@ export const Config = {
         return { issues: unknown.map(key => ({ message: `unknown config field "${key}"`, path: [key] })) }
       }
       if (config.timeZone !== undefined && typeof config.timeZone !== 'string') {
-        return { issues: [{ message: 'timeZone must be an IANA zone name', path: ['timeZone'] }] }
+        return { issues: [{ message: 'timeZone must be an IANA zone or UTC offset', path: ['timeZone'] }] }
       }
       try {
         return { value: { timeZone: resolveZone(config.timeZone) } }
@@ -84,17 +82,14 @@ export const Config = {
 const OUTPUT_SCHEMA = {
   type: 'object',
   properties: {
-    simulated: { type: 'boolean', description: 'True when a data-simulation scenario supplied the reading.' },
-    scenario: { type: 'string', description: 'Id of the simulation scenario, when one supplied the reading.' },
     instant: { type: 'string', description: 'The instant in UTC, ISO 8601.' },
     timeZone: { type: 'string', description: 'Zone label of the reading.' },
     utcOffset: { type: 'string', description: 'UTC offset of the reading, such as +08:00.' },
     localDate: { type: 'string', description: 'Local calendar date, YYYY-MM-DD.' },
     localTime: { type: 'string', description: 'Local date and clock time, YYYY-MM-DD HH:MM:SS.' },
     weekday: { type: 'string', description: 'Weekday name in English.' },
-    source: { type: 'string', enum: ['data-simulation', 'system'], description: 'Which clock answered.' },
   },
-  required: ['simulated', 'instant', 'timeZone', 'utcOffset', 'localDate', 'localTime', 'weekday', 'source'],
+  required: ['instant', 'timeZone', 'utcOffset', 'localDate', 'localTime', 'weekday'],
   additionalProperties: false,
 }
 
@@ -110,10 +105,15 @@ function offsetLabel(offsetMinutes) {
   return `${sign}${pad(Math.floor(total / 60))}:${pad(total % 60)}`
 }
 
+/** Use the same label for fixed offsets from either clock. */
+function zoneLabel(zone, offset) {
+  return /^[+-]/.test(zone) ? `UTC${offset}` : zone
+}
+
 /**
  * Read the real system clock in the deployment's display zone.
- * @param zone - IANA zone name.
- * @returns the same reading fields the simulation service reports.
+ * @param zone - IANA zone name or UTC offset.
+ * @returns the tool's clock fields.
  */
 function systemReading(zone) {
   const now = Date.now()
@@ -127,15 +127,14 @@ function systemReading(zone) {
   }
   const asUtc = Date.UTC(parts.year, parts.month - 1, parts.day, parts.hour, parts.minute, parts.second)
   const date = `${parts.year}-${pad(parts.month)}-${pad(parts.day)}`
+  const utcOffset = offsetLabel(Math.round((asUtc - now) / 60_000))
   return {
-    simulated: false,
     instant: new Date(now).toISOString(),
-    timeZone: zone,
-    utcOffset: offsetLabel(Math.round((asUtc - now) / 60_000)),
+    timeZone: zoneLabel(zone, utcOffset),
+    utcOffset,
     localDate: date,
     localTime: `${date} ${pad(parts.hour)}:${pad(parts.minute)}:${pad(parts.second)}`,
     weekday: WEEKDAYS[new Date(asUtc).getUTCDay()],
-    source: 'system',
   }
 }
 
@@ -143,39 +142,32 @@ function systemReading(zone) {
  * Read the clock this deployment presents to the model.
  * @param ctx - plugin context; the simulation service is read through `ctx.get`.
  * @param zone - zone used when no simulation supplies the reading.
- * @returns the reading, naming its source.
+ * @returns the clock fields exposed to the model.
  */
 function readClock(ctx, zone) {
   const simulation = ctx.get('dataSimulation')
   if (simulation === undefined) return systemReading(zone)
   const reading = simulation.current()
   return {
-    simulated: true,
-    scenario: reading.scenarioId,
     instant: reading.instant,
-    timeZone: reading.timeZone,
+    timeZone: zoneLabel(reading.timeZone, reading.utcOffset),
     utcOffset: reading.utcOffset,
     localDate: reading.localDate,
     localTime: reading.localTime,
     weekday: reading.weekday,
-    source: 'data-simulation',
   }
 }
 
 /**
- * Render the one model-facing line for a reading. The source is always stated,
- * because "simulated" is a property of the deployment the model cannot infer.
+ * Format the clock reading for the model.
  * @param _args - unused; the tool takes no arguments.
  * @param value - the reading.
  * @returns a single text block.
  */
 function render(_args, value) {
-  const source = value.source === 'data-simulation'
-    ? `simulated by the "${value.scenario}" scenario`
-    : 'the system clock'
   return [{
     type: 'text',
-    text: `It is ${value.localTime} (${value.weekday}), ${value.timeZone} ${value.utcOffset} — ${source}.`,
+    text: `It is ${value.localTime} (${value.weekday}), ${value.timeZone} ${value.utcOffset}.`,
   }]
 }
 

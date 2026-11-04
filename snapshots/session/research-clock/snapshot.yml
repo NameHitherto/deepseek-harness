@@ -1,0 +1,8 @@
+version: 1
+scenario: research-clock
+profile: headless
+composition: research-clock
+recording: authored
+header:
+  class: research-clock
+  pin: true
