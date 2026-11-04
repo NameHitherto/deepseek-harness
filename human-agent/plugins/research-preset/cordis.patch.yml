@@ -19,6 +19,9 @@
     root: !!js process.getBuiltinModule('node:path').join(ctx.profileContext.dir, 'storages')
 
 - insert:
+    - id: research-todo-panel
+      name: '@local/research-preset'
+
     - id: preset-research
       name: '@deepseek-ai/dsh-agent-preset'
       config:
@@ -29,3 +32,5 @@
         plugins:
           - id: get-time
             name: '@local/get-time'
+          - id: research-todo-tool
+            name: '@local/research-preset/todo-tool'
