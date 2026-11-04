@@ -1,6 +1,6 @@
 {
   "meta": {
     "title": "Data simulation",
-    "description": "Supplies a switchable simulated clock, task prompt, and expected result that other plugins read."
+    "description": "Choose a scenario with a simulated clock, a task prompt, and criteria for scoring the answer."
   }
 }

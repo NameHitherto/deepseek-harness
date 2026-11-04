@@ -1,0 +1,16 @@
+# Bilingual-pair consistency record for guide.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write docs/upgrade-guide/v0.2.2-alpha.3/data-simulation-expected/guide.md
+/:
+  en: 67d1a9c29d399fa1
+  zh: 4a1f62d0c4234135
+/data-simulation-uses-an-array-of-scoring-criteria:
+  en: 7fc639da85f0e9ed
+  zh: 950dc692d7512125
+/data-simulation-uses-an-array-of-scoring-criteria/change:
+  en: 8b3535c0e3a8e975
+  zh: 6c719f6741420eff
+/data-simulation-uses-an-array-of-scoring-criteria/migration:
+  en: 6d32cf364582adcc
+  zh: f807f0826e8393b7

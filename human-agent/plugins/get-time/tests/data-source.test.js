@@ -33,7 +33,7 @@ async function assertClockParity(timeZone, scenarioZone) {
       time: reading.instant,
       timeZone: scenarioZone,
       prompt: 'Task prompt',
-      expectedResult: 'Scoring reference',
+      expected: ['Scoring reference', 'Another scoring criterion'],
     }],
   })
 
@@ -51,7 +51,7 @@ async function assertClockParity(timeZone, scenarioZone) {
   assert.deepEqual(result, reading)
   assert.deepEqual(simulated.tool.output.render({}, result), system.tool.output.render({}, reading))
   const modelContext = JSON.stringify([simulated.tool.description, simulated.prompt, simulated.tool.output.render({}, result)])
-  assert.doesNotMatch(modelContext, /simulat|scenario|source|system clock|scoring reference/i)
+  assert.doesNotMatch(modelContext, /simulat|scenario|source|system clock|scoring reference|another scoring criterion|task prompt/i)
 }
 
 test('system and simulated clocks expose identical tool context and results in the same IANA zone', async () => {

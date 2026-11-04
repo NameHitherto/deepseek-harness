@@ -36,8 +36,9 @@ window.__ModuleLoader__.load({
       .dsim-body { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
       .dsim-label { font-weight: 600; }
       .dsim-meta { color: var(--dsw-alias-label-secondary); }
-      .dsim-field { color: var(--dsw-alias-label-secondary); overflow-wrap: anywhere; }
+      .dsim-field { color: var(--dsw-alias-label-secondary); overflow-wrap: anywhere; white-space: pre-wrap; }
       .dsim-field b { color: var(--dsw-alias-label-primary); font-weight: 600; }
+      .dsim-expected-item { display: block; }
       .dsim-bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
       .dsim-button { padding: 4px 10px; border-radius: 6px; border: 1px solid var(--dsw-alias-border-l2);
         background: var(--dsw-alias-bg-layer-1); color: var(--dsw-alias-label-primary); font: inherit; cursor: pointer; }
@@ -52,14 +53,18 @@ window.__ModuleLoader__.load({
         border: 1px solid var(--dsw-alias-border-l2); background: var(--dsw-alias-bg-base);
         color: var(--dsw-alias-label-primary); font: inherit; }
       .dsim-form textarea { min-height: 52px; resize: vertical; }
+      .dsim-criteria { display: flex; flex-direction: column; gap: 8px; }
     `
 
     const EN = {
       title: 'Data simulation',
-      description: 'The simulated clock, task prompt, and expected result other plugins read. Switching a scenario applies immediately.',
+      description: 'Choose a scenario with a simulated clock, a task prompt, and criteria for scoring the answer.',
       active: 'Active scenario',
       prompt: 'Task prompt',
-      expected: 'Expected result',
+      expected: 'Expected results',
+      expectedItem: 'Expected result {number}',
+      addExpected: 'Add expected result',
+      removeExpected: 'Remove expected result {number}',
       none: 'none',
       loading: 'Reading the scenario library…',
       readFailed: 'The scenario library could not be read.',
@@ -85,10 +90,13 @@ window.__ModuleLoader__.load({
     }
     const ZH = {
       title: '数据模拟',
-      description: '供其它插件读取的模拟时间、任务提示词与预期结果；切换场景立即生效。',
+      description: '选择实验场景，设置模拟时间、任务提示词和逐项评分的预期结果。',
       active: '当前场景',
       prompt: '任务提示词',
       expected: '预期结果',
+      expectedItem: '预期结果 {number}',
+      addExpected: '新增预期结果',
+      removeExpected: '移除预期结果 {number}',
       none: '无',
       loading: '正在读取场景库…',
       readFailed: '无法读取场景库。',
@@ -159,7 +167,9 @@ window.__ModuleLoader__.load({
         h('span', { class: 'dsim-meta' },
           `${reading.localTime} · ${reading.weekday} · ${reading.timeZone} (${reading.utcOffset})`),
         h('span', { class: 'dsim-field' }, h('b', null, `${t('prompt')}: `), scenario.prompt ?? t('none')),
-        h('span', { class: 'dsim-field' }, h('b', null, `${t('expected')}: `), scenario.expectedResult ?? t('none'))))
+        h('span', { class: 'dsim-field' }, h('b', null, `${t('expected')}: `),
+          scenario.expected.length === 0 ? t('none') : scenario.expected.map((criterion, index) =>
+            h('span', { class: 'dsim-expected-item', key: index }, `${index + 1}. ${criterion}`)))))
     }
 
     /**
@@ -189,7 +199,20 @@ window.__ModuleLoader__.load({
         field('time', t('time'), t('timeHint')),
         field('timeZone', t('timeZone'), t('timeZoneHint')),
         field('prompt', t('prompt'), undefined, true),
-        field('expectedResult', t('expected'), undefined, true),
+        h('div', { class: 'dsim-criteria' },
+          draft.expected.map((criterion, index) => h('div', { class: 'dsim-criteria', key: index },
+            h('label', null, t('expectedItem', { number: index + 1 }), h('textarea', {
+              value: criterion,
+              onChange: event => { onChange({ ...draft, expected: draft.expected.with(index, event.target.value) }) },
+            })),
+            h('div', null, h('button', {
+              type: 'button', class: 'dsim-button', disabled: busy,
+              onClick: () => { onChange({ ...draft, expected: draft.expected.toSpliced(index, 1) }) },
+            }, t('removeExpected', { number: index + 1 }))))),
+          h('div', null, h('button', {
+            type: 'button', class: 'dsim-button', disabled: busy,
+            onClick: () => { onChange({ ...draft, expected: [...draft.expected, ''] }) },
+          }, t('addExpected')))),
         h('div', { class: 'dsim-bar' },
           h('button', { type: 'button', class: 'dsim-button', disabled: busy, onClick: onSave }, t('save')),
           h('button', { type: 'button', class: 'dsim-button', disabled: busy, onClick: onCancel }, t('cancel'))))
@@ -251,7 +274,8 @@ window.__ModuleLoader__.load({
 
       const commit = () => {
         setBusy(true)
-        save(draft).then(answer => settle(answer, t('saveFailed')), () => {
+        const expected = draft.expected.map(criterion => criterion.trim()).filter(Boolean)
+        save({ ...draft, expected }).then(answer => settle(answer, t('saveFailed')), () => {
           setBusy(false)
           setNotice({ error: true, text: t('saveFailed') })
         })
@@ -334,7 +358,6 @@ window.__ModuleLoader__.load({
         draft === undefined
           ? null
           : h(ScenarioForm, {
-            key: draft.id ?? 'new',
             draft,
             t,
             busy,
@@ -360,7 +383,7 @@ window.__ModuleLoader__.load({
         time: scenario.time,
         timeZone: scenario.timeZone,
         prompt: scenario.prompt,
-        expectedResult: scenario.expectedResult,
+        expected: scenario.expected,
       }
     }
 
@@ -376,7 +399,7 @@ window.__ModuleLoader__.load({
         time: seed?.time ?? '',
         timeZone: seed?.timeZone ?? '',
         prompt: '',
-        expectedResult: '',
+        expected: [],
       }
     }
 
@@ -391,7 +414,7 @@ window.__ModuleLoader__.load({
     }
 
     return {
-      inject: ['slots'],
+      inject: ['slots', 'locale'],
       apply(ctx) {
         const style = document.createElement('style')
         style.dataset.plugin = 'data-simulation'
@@ -401,12 +424,8 @@ window.__ModuleLoader__.load({
           return () => { style.remove() }
         }, 'data-simulation: styles')
 
-        const locale = ctx.get('locale')
-        if (locale !== undefined) {
-          ctx.effect(() => locale.register(NS, 'en', EN), 'data-simulation: en dictionary')
-          ctx.effect(() => locale.register(NS, 'zh', ZH), 'data-simulation: zh dictionary')
-        }
-        const translate = locale === undefined ? key => key : locale.bind(NS)
+        ctx.effect(() => ctx.locale.register(NS, { en: EN, zh: ZH }), 'data-simulation: dictionaries')
+        const translate = ctx.locale.bind(NS)
 
         ctx.slots.inject('settings.plugins.tab', () => ctx.slots.register({
           name: 'settings.plugins.tab',

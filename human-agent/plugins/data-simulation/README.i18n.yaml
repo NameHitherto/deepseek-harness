@@ -3,17 +3,17 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write human-agent/plugins/data-simulation/README.md
 /data-simulation:
-  en: cb3242cf65b72dac
-  zh: c30c8796b2548f4b
+  en: 44dcfb888e9da404
+  zh: 5ff35ca0e4722cda
 /data-simulation/service:
-  en: c5790ac66b619e74
-  zh: 30b8f42c9a6f5a45
+  en: f39e16cd3872d9a9
+  zh: da70b7e8be094496
 /data-simulation/change-notification:
   en: bfc4e2d1271c917b
   zh: 33f7d8dd3c85ec3e
 /data-simulation/scenario-fields:
-  en: e94e94976153c49d
-  zh: 9ef3a517ed34cef6
+  en: e5d8880aa4f46898
+  zh: 65f8fc958b754493
 /data-simulation/failure-behavior:
   en: 264775016fb2d112
   zh: 203abc12e28c3b83

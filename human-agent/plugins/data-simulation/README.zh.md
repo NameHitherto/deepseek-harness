@@ -2,9 +2,11 @@
 
 [English](README.md) | 中文
 
-提供可切换的场景库。每个场景包含模拟当前时间、任务提示和预期结果。其他插件通过 `dataSimulation` 服务读取场景库。
+提供可切换的场景库。每个场景包含模拟当前时间、任务提示词和一组评分项。其他插件通过 `dataSimulation` 服务读取场景库。
 
-在**设置 → 插件 → 数据模拟**中切换、新增、编辑或删除场景。消费方在下次读取时获取新的选择。场景库保存在 `<profile>/.data-simulation/scenarios.json`，初始包含四个内置场景。`research-web` 在 Web 应用层挂载服务和设置页。科研 Agent 预设通过时间工具读取该服务。
+在**设置 → 内置插件 → 数据模拟**中切换、新增、编辑或删除场景。消费方在下次读取时获取新的选择。场景库保存在 `<profile>/.data-simulation/scenarios.json`，初始包含四个内置场景。`research-web` 在 Web 应用层挂载服务和设置页。科研 Agent 预设通过时间工具读取该服务。
+
+每个内置提示词都提供任务材料，并指出用户需要的具体交付结果。在编辑器中点击**新增预期结果**，把每个要核对的答案或可观察结果写成一条评分项。
 
 ## 服务
 
@@ -12,7 +14,7 @@
 
 | 成员 | 返回值 |
 | --- | --- |
-| `list()` | 所有场景，字段为 `{ id, label, time, timeZone?, prompt?, expectedResult?, reading }` |
+| `list()` | 所有场景，字段为 `{ id, label, time, timeZone?, prompt?, expected, reading }` |
 | `state()` | 设置页使用的 `{ activeId, scenarios, presets, storage }` |
 | `activeId()` | 当前场景的 ID |
 | `current()` | 当前场景的模拟时钟读数 |
@@ -45,7 +47,7 @@
 }
 ```
 
-消费方可将场景的任务提示作为用户任务提交，并使用预期结果评分。向模型传递场景数据的插件必须遵守[数据模拟规则](../../AGENTS.md#data-simulation)。
+消费方可将 `prompt` 作为用户任务提交，并对照 `expected` 逐项评分。`expected` 仅用于评分。向模型传递场景数据的插件必须遵守[数据模拟规则](../../AGENTS.md#data-simulation)。
 
 ## 变更通知
 
@@ -68,7 +70,7 @@ export function apply(ctx) {
 | `time` | 是 | 必须包含偏移量的 ISO 8601 日期和时间（`Z` 或 `±HH:MM`） |
 | `timeZone` | 否 | IANA 时区。填写时使用该时区的本地时间，否则使用偏移量对应的本地时间 |
 | `prompt` | 否 | 消费方可呈现的任务提示 |
-| `expectedResult` | 否 | 消费方可用于比较的预期结果 |
+| `expected` | 否 | 有序的非空字符串数组，每项对应一条评分标准。省略时使用 `[]` |
 
 ## 失败处理
 
